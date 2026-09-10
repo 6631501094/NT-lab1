@@ -1,0 +1,12 @@
+services:
+
+  router-ssh:
+    build: .
+    container_name: router-ssh
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    ports:
+      - "8000:8000"

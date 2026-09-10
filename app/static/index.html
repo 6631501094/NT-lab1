@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Cisco Router SSH</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #222;
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        pre {
+            background: #111;
+            color: #00ff66;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 6px;
+            min-height: 150px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>Cisco Router SSH</h1>
+
+
+    <!-- Router IP -->
+
+    <label for="ip">
+        Router IP Address
+    </label>
+
+    <input
+        type="text"
+        id="ip"
+        value="192.168.79.134"
+        placeholder="Enter router IP"
+    >
+
+
+    <!-- Router Command -->
+
+    <label for="command">
+        Router Command Line
+    </label>
+
+    <input
+        type="text"
+        id="command"
+        value="show ip interface brief"
+        placeholder="Enter Cisco command"
+    >
+
+
+    <!-- Execute -->
+
+    <button
+        id="executeButton"
+        onclick="executeCommand()"
+    >
+        Execute
+    </button>
+
+
+    <!-- Status -->
+
+    <div id="status"></div>
+
+
+    <!-- Output -->
+
+    <pre id="output">Output will appear here...</pre>
+
+</div>
+
+
+<script>
+
+async function executeCommand() {
+
+    const ip =
+        document.getElementById("ip").value;
+
+    const command =
+        document.getElementById("command").value;
+
+    const button =
+        document.getElementById("executeButton");
+
+    const status =
+        document.getElementById("status");
+
+    const output =
+        document.getElementById("output");
+
+
+    // Check input
+
+    if (!ip || !command) {
+
+        status.innerText =
+            "Please enter router IP and command.";
+
+        return;
+    }
+
+
+    // Disable button
+
+    button.disabled = true;
+
+    button.innerText =
+        "Executing...";
+
+    status.innerText =
+        "Connecting to router...";
+
+    output.innerText = "";
+
+
+    try {
+
+        const response = await fetch(
+            "/ssh",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    ip: ip,
+                    command: command
+                })
+            }
+        );
+
+
+        const data =
+            await response.json();
+
+
+        if (response.ok) {
+
+            status.innerText =
+                "Command executed successfully.";
+
+            output.innerText =
+                data.output;
+
+        } else {
+
+            status.innerText =
+                "Error";
+
+            output.innerText =
+                data.detail ||
+                "Unknown error";
+        }
+
+
+    } catch (error) {
+
+        status.innerText =
+            "Connection error.";
+
+        output.innerText =
+            error.toString();
+    }
+
+
+    // Enable button
+
+    button.disabled = false;
+
+    button.innerText =
+        "Execute";
+}
+
+</script>
+
+</body>
+
+</html>
